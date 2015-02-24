@@ -41,7 +41,9 @@ config = loadConf()
 trainServer = {'ip':config['trainDB']['ip'], 'port':config['trainDB']['port'], 'dbUser':config['trainDB']['dbUser'], 'dbPass':config['trainDB']['dbPass'], 'dbName':config['trainDB']['dbName']}
 testServer = {'ip':config['prodDB']['ip'], 'port':config['prodDB']['port'], 'dbUser':config['prodDB']['dbUser'], 'dbPass':config['prodDB']['dbPass'], 'dbName':config['prodDB']['dbName']}
 
-trainEngine = SL.ShapeLearner(trainServer['dbUser'], trainServer['dbPass'], trainServer['dbName'], trainServer['ip'], int(trainServer['port']), "structure.sql")
+#trainEngine = SL.ShapeLearner(trainServer['dbUser'], trainServer['dbPass'], trainServer['dbName'], trainServer['ip'], int(trainServer['port']), "structure.sql")
+trainEngine = SL.ShapeLearner(trainServer['dbUser'], trainServer['dbPass'], trainServer['dbName'], trainServer['ip'], int(trainServer['port']))
+
 
 ################################### LAUNCH EXEC ######################################################
 
@@ -77,11 +79,24 @@ print
 
 for j in jobs:
 	
-	while trainEngine.getActiveThread() > 95:
+	while trainEngine.getActiveThread() > 90:
 		time.sleep(1)
 		
 	
 	print "Launched : " + j[0] + " // " + j[1]
 	trainEngine.signBinaryImage(j[0], j[1])
+	time.sleep(10/1000) #wait 10 milisec to synchronize
 
+print
+print
+print "Waiting for all active threads to finish."	
+while True:
+	activeThread = trainEngine.getActiveThread()
+	if activeThread != 0:
+		time.sleep(1)
+	else:
+		break
+
+print
+print		
 print "Operation Finished"
