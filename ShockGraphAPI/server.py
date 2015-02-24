@@ -55,14 +55,12 @@ def getFiles(path) :
 	
 inputDir = "data"
 
-partID = 0
 files = getFiles(inputDir + "/")
  
 jobs = []
 threadList = []
 
 for file in files :
-	partID = partID + 1 
 	if (file.endswith('.ppm') or file.endswith('.PPM')) and file[0] != "." :
 		classname = ""
 		
@@ -71,30 +69,19 @@ for file in files :
 				classname = file[:-8]
 		except Exception :
 				classname = file[:-7]
-		jobs.append(["data/" + file, classname, 'shockThread' + str(partID)])
+		jobs.append(["data/" + file, classname])
 
-locker = threading.Lock() 
-	
+print
+raw_input("Ready to launch the execution. Press a key please !")
+print
+
 for j in jobs:
-	locker.acquire()
-	activeThread = trainEngine.getActiveThread()
 	
-	if activeThread > 60 and len(threadList) > 0:
-		th = threadList[0]
-		del threadList[0]
-		
-	elif activeThread > 60 and len(threadList) <= 0 :
+	while trainEngine.getActiveThread() > 95:
 		time.sleep(1)
 		
-	else :
-		print "Launched : " + j[0] + " // " + j[1] + " && Thread number = " + str(activeThread)
-		threadList.append(threading.Thread(target = trainEngine.signBinaryImage, name=j[2],args=(j[0], j[1])))	
-		threadList[-1].daemon=True
-		threadList[-1].start()
-		
-	locker.release()
-
-for t in threadList:	
-	t.join(1)
 	
+	print "Launched : " + j[0] + " // " + j[1]
+	trainEngine.signBinaryImage(j[0], j[1])
+
 print "Operation Finished"
