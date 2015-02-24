@@ -1,0 +1,4 @@
+<config>
+	<DBserver serverName="trainDB" ip="54.77.188.25" port="10001" dbUser="postgres" dbPass="##########################" dbName="postgres"/>
+	<DBserver serverName="prodDB" ip="54.77.188.25" port="10000" dbUser="postgres" dbPass="##########################" dbName="postgres"/>
+</config>

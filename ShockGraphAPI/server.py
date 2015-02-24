@@ -11,6 +11,17 @@ from json import dumps
 import ctypes
 from threading import Thread
 import time 
+from sqlalchemy import *
+from sqlalchemy.sql import select, column
+
+################################# Init Connection #################################
+
+def initConnect(credentials):
+	engine = create_engine("postgresql+psycopg2://"+credentials['dbUser']+":"+credentials['dbPass']+"@"+credentials['ip']+":"+credentials['port']+"/"+credentials['dbName'], isolation_level="READ COMMITTED")
+	connection = engine.connect()
+	return [engine, connection]
+	
+################################# Threading Classes ###############################
  
 class TimingThread(Thread):
  
@@ -59,7 +70,14 @@ def getStaticFile(filename):
 		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\ShockGraphAPI\\static', mimetype='text/css')
 	elif extension == 'js':
 		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\ShockGraphAPI\\static', mimetype='text/javascript')  
-		
+
+@route('/prepareLearning')
+def prepareLearning():
+	v_connect = initConnect(trainServer)
+	rslt =  v_connect[1].execute('select * from updateColumnData();')
+
+	return "Training Data Updated"
+
 @route('/')
 def homepage():
 	global partID
@@ -71,7 +89,11 @@ def homepage():
 	
 ################################# Server Initialization #####################################
 config = loadConf()
-	
+
+trainServer = {'ip':config['trainDB']['ip'], 'port':config['trainDB']['port'], 'dbUser':config['trainDB']['dbUser'], 'dbPass':config['trainDB']['dbPass'], 'dbName':config['trainDB']['dbName']}
+testServer = {'ip':config['prodDB']['ip'], 'port':config['prodDB']['port'], 'dbUser':config['prodDB']['dbUser'], 'dbPass':config['prodDB']['dbPass'], 'dbName':config['prodDB']['dbName']}
+
+
 timeThread = TimingThread(3)
 timeThread.setName('timeThread')
 
@@ -81,7 +103,9 @@ time.sleep(1)
 dll=ctypes.CDLL('ShapeLearnerDLL.dll')
 dll.openDataBase.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint, ctypes.c_char_p]
 dll.signBinaryImage.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-dll.openDataBase('postgres', 'postgres', 'postgres', '54.77.188.25', 10101, 'structure.sql')
+#void openDataBase(char* _dbUser, char* _dbPass, char* _dbName, char* _dbHost, unsigned int _dbPort, char* _dbInit = "")
+
+dll.openDataBase(trainServer['dbUser'], trainServer['dbPass'], trainServer['dbName'], trainServer['ip'], int(trainServer['port']), "structure.sql")
 
 timeThread.join()
 

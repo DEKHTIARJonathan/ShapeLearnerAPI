@@ -26,8 +26,8 @@ def loadModel():
 		return False
 
 ################################# Init Connection #################################
-def initConnect(IP):
-	engine = create_engine("postgresql+psycopg2://postgres:postgres@"+IP+"/postgres", isolation_level="READ COMMITTED")
+def initConnect(credentials):
+	engine = create_engine("postgresql+psycopg2://"+credentials['dbUser']+":"+credentials['dbPass']+"@"+credentials['ip']+":"+credentials['port']+"/"+credentials['dbName'], isolation_level="READ COMMITTED")
 	connection = engine.connect()
 	return [engine, connection]
 
@@ -276,8 +276,8 @@ def homepage():
 ################################# Server Initialization #####################################
 config = loadConf()
 
-trainServer = config['knowledgeBase'][0]+":"+config['knowledgeBase'][1]
-testServer = config['prodServer'][0]+":"+config['prodServer'][1]
+trainServer = {'ip':config['trainDB']['ip'], 'port':config['trainDB']['port'], 'dbUser':config['trainDB']['dbUser'], 'dbPass':config['trainDB']['dbPass'], 'dbName':config['trainDB']['dbName']}
+testServer = {'ip':config['prodDB']['ip'], 'port':config['prodDB']['port'], 'dbUser':config['prodDB']['dbUser'], 'dbPass':config['prodDB']['dbPass'], 'dbName':config['prodDB']['dbName']}
 
 init = initServer()
 

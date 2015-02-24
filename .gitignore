@@ -3,4 +3,6 @@ Needed To Install/binaries/Anaconda-2.2.0-Windows-x86_64.exe
 *.npy
 *.model
 *.pyc
+*.ppm
+*.log
 Needed To Install/binaries/Anaconda-2.2.0-Windows-x86.exe

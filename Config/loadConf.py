@@ -8,9 +8,14 @@ def loadConf(confPath = '../Config/conf.xml'):
 	servers = dict()
 
 	for serv in configurations.iter('DBserver'):
-		serverName = serv.attrib['name']
+	
+		serverName = serv.attrib['serverName']
 		serverPort = serv.attrib['port']
 		serverIP = serv.attrib['ip']
-		servers[serverName] = [serverIP, serverPort]
+		dbUser = serv.attrib['dbUser']
+		dbPass = serv.attrib['dbPass']
+		dbName = serv.attrib['dbName']
+		
+		servers[serverName] = {'ip':serverIP, 'port':serverPort, 'dbUser':dbUser, 'dbPass':dbPass, 'dbName':dbName }
 		
 	return servers
