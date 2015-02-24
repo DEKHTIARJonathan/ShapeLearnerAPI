@@ -5,6 +5,7 @@ CREATE TABLE "jobStatus" (
 );
 
 INSERT INTO "jobStatus" (name) VALUES 
+('Not Started'),
 ('Waiting'),
 ('Ongoing'),
 ('Error'),
