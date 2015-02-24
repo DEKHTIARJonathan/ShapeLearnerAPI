@@ -14,6 +14,16 @@ from sklearn.externals import joblib
 from bottle import route, run, response, static_file, request, error
 from json import dumps
 
+#################################### WebService Route / #####################################
+'''
+@route('/prepareLearning')
+def prepareLearning():
+	v_connect = initConnect(trainServer)
+	rslt =  v_connect[1].execute('select * from updateColumnData();')
+
+	return "Training Data Updated"
+'''
+
 ################################# Save/Load Model #################################
 def saveModel(model):
 	joblib.dump(model, 'model/knn.model') 

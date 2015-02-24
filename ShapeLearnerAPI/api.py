@@ -31,6 +31,24 @@ class API:
 	def start(self):
 		self._app.run(server='paste', host=self._host, port=self._port)
 		
+	def _getDirs(self, path) : 
+		dirs = []
+		listing = os.listdir(path)
+		for d in listing:
+			if os.path.isdir(path + "/" + d):
+				dirs.append(d.encode("utf-8"))
+		return dirs
+
+	def _getFiles(self, path) : 
+		files = []
+		listing = os.listdir(path)
+
+		for f in listing:
+			if os.path.isfile(path + "/" + f):
+				files.append(f.encode("utf-8"))
+
+		return files
+		
 	def _generateFilename (self):
 		return str(uuid.uuid4().hex)
 		
@@ -78,7 +96,6 @@ class API:
 		self._app.route('/static/<filename:path>', callback=self._getStaticFile)
 		self._app.route('/', callback=self._homepage)
 		
-		self._app.route('/upload', method="POST", callback=self._upload)
 		self._app.route('/signInContext', method="POST", callback=self._signInContext)
 		self._app.route('/getJobStatus', method="POST", callback=self._getJobStatus)
 		
@@ -112,26 +129,6 @@ class API:
 		  		
 		return output['jobID']
 	
-	def _upload(self):
-		classname   = request.forms.get('classname')
-		upload     = request.files.get('upload')
-		
-		name, ext = os.path.splitext(upload.filename.lower())
-		
-		rv = ""
-		if ext not in ('.ppm','.stl'):
-			rv = {"status": "Error", "message": 'File extension not allowed.'}
-		else:
-			save_path = "../temp/"
-			savingName = self._generateFilename() + ext
-			fullpath = save_path + savingName
-			upload.save(fullpath) # appends upload.filename automatically
-			
-			rv = {"status": "Success", "filePath": fullpath}
-			
-		response.content_type = 'application/json'
-		return dumps(rv)
-	
 	def _signInContext(self):
 		classname	= request.forms.get('classname')
 		upload		= request.files.get('upload')
@@ -154,9 +151,45 @@ class API:
 			upload.save(fullpath) # appends upload.filename automatically
 			
 			if ext ==  ".zip":
-				dirpath = "../temp/" + self._generateFilename()
-				zipfile.ZipFile(fullpath, "r").extractall(dirpath)	
-				rv = {"status": "Success", "message": "Archive extracted"}				
+				dirpath = fullpath[:-4]
+				zipfile.ZipFile(fullpath, "r").extractall(dirpath)
+				os.remove(fullpath) #Removing the old zipfile
+				
+				dirList = self._getDirs(dirpath)
+				jobList = []
+				fileList = []
+				for dir in dirList:
+					curdir = dirpath + "/" + dir + "/"
+					files = []
+					for f in self._getFiles(curdir) :
+						if f[-4:] == '.stl':
+							files.append(curdir + f)
+						else:
+							newpath = "../temp/" + self._generateFilename() + f[-4:]
+							os.rename(curdir + f, newpath)
+							files.append(newpath)
+							
+					for f in files:
+						if f[-4:] ==  ".stl":
+							params = {"sourceFile":f, "format": "ppm", "precisionLevel" : 4}
+							outputSTL = self._sendPostRequest(self._stl2ppmServer, params)
+							os.remove(f) #Removing the file after using
+							fileList.extend([item.encode("utf-8"), dir] for item in outputSTL['outputPPM'])
+						else:
+							fileList.append([f,dir])
+					os.rmdir(curdir)
+				os.rmdir(dirpath)
+				
+				jobIDs = []
+				for _ in fileList:
+					jobIDs.append(self._createJob())
+				
+				for (jobID, file) in zip(jobIDs, fileList):
+					dataShock = {"filename":file[0], "classname":file[1], "jobID": jobID}
+					thread.start_new_thread(self._sendPostRequest, (shockServer, dataShock))
+					
+				rv = {"status": "Success", "jobIDs": jobIDs}
+				
 			elif ext == ".ppm":
 				jobID = self._createJob()
 				dataShock = {"filename":fullpath, "classname":classname, "jobID": jobID}

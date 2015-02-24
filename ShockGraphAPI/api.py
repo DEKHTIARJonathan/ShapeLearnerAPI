@@ -7,15 +7,6 @@ from json import dumps
 import shapeLearner as SL
 
 #################################### WebService Route / #####################################
-'''
-@route('/prepareLearning')
-def prepareLearning():
-	v_connect = initConnect(trainServer)
-	rslt =  v_connect[1].execute('select * from updateColumnData();')
-
-	return "Training Data Updated"
-'''
-#################################### WebService Route / #####################################
 class API:
 	def __init__(self, jobServerAPI, port, local, credentials = ""):
 		
