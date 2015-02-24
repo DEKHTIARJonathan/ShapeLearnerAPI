@@ -92,6 +92,9 @@ class API:
 		result = self._engine.execute(sql).fetchone()
 		rv = {"jobID": result['id']}
 		
+		if request.json["jobStatus"] == "Finished":
+			os.remove(request.json["partName"]) #Removing the file after using
+		
 		response.content_type = 'application/json'
 		return dumps(rv)
 	

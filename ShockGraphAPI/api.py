@@ -82,35 +82,29 @@ class API:
 			
 	def _launchComputation(self):
 	#inputs : 
-	#	Production : {"folder": "../temp", "filename":"AmortisseurA00.ppm", "classname":"production"}
-	#	Training : {"folder": "../temp", "filename":"AmortisseurA00.ppm", "classname":"Bielle"}
+	#	Production : {"filename":"../temp/AmortisseurA00.ppm", "classname":"production"}
+	#	Training : {"filename":"../temp/AmortisseurA00.ppm", "classname":"Bielle"}
 	#outputs :
 	#	Success : {"status": "JobStarted", "jobID": 38}
 	#	Error : {"status": "Error", "message": "The file requested doesn't exist"}
-	#	Error : {"status": "Error", "message": "The folder requested doesn't exist"}
 	#	Error : {"status": "Error", "message": "The File's extension is not the correct one (*.ppm required)"}
 	
-	
-		inputDir = request.json["folder"]
-		filename = request.json["filename"]
+
+		file = request.json["filename"]
 		classname = request.json["classname"]
-		
-		file = inputDir + "/" + filename
 		rv = ""
 		
-		if not os.path.isdir(inputDir):
-			rv = {"status" : "Error", "message" : "The folder requested doesn't exist"}
+		name, ext = os.path.splitext(file.lower())
+		
+		if not os.path.isfile(file) :
+			rv = {"status" : "Error", "message" : "The file requested doesn't exist"}
 			
-		else:
-			if not os.path.isfile(file) :
-				rv = {"status" : "Error", "message" : "The file requested doesn't exist"}
-				
-			elif not ( (file.endswith('.ppm') or file.endswith('.PPM')) and file[0] != "." ):
-				rv = {"status" : "Error", "message" : "The File's extension is not the correct one (*.ppm required)"}
-				
-			else :
-				jobID = self._engine.signBinaryImage(file, classname)
-				rv = {"status" : "JobStarted", "jobID": jobID}
+		elif ext != ".ppm":
+			rv = {"status" : "Error", "message" : "The File's extension is not the correct one (*.ppm required)"}
+			
+		else :
+			jobID = self._engine.signBinaryImage(file, classname)
+			rv = {"status" : "JobStarted", "jobID": jobID}
 		
 		response.content_type = 'application/json'
 		return dumps(rv)
