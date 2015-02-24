@@ -54,8 +54,8 @@ class API:
 			self._app.route('/launchComputation', method="POST", callback=self._launchComputation)
 			self._app.route('/batchProcess', method="POST", callback=self._batchProcess)	
 		else:
-			self._app.route('/compareSignatures', method="POST", callback=self._compareSignatures)		
-		
+			self._app.route('/compareSignatures', method="POST", callback=self._compareSignatures)
+			
 		self._app.route('/getActiveThreads', callback=self._getActiveThreads)		
 		self._app.route('/static/<filename:path>', callback=self._getStaticFile)
 		self._app.route('/', callback=self._homepage)
@@ -68,7 +68,7 @@ class API:
 		
 	def _error500(self, error):
 		return error
-		
+			
 	def _getStaticFile(self, filename):
 		extension = str.lower(os.path.splitext(filename)[1][1:])
 		if  extension == 'jpeg'or extension == 'jpg':
@@ -82,8 +82,8 @@ class API:
 			
 	def _launchComputation(self):
 	#inputs : 
-	#	Production : {"filename":"../temp/AmortisseurA00.ppm", "classname":"production"}
-	#	Training : {"filename":"../temp/AmortisseurA00.ppm", "classname":"Bielle"}
+	#	Production : {"filename":"../temp/AmortisseurA00.ppm", "classname":"production", "jobID" = 4}
+	#	Training : {"filename":"../temp/AmortisseurA00.ppm", "classname":"Bielle", "jobID" = 4}
 	#outputs :
 	#	Success : {"status": "JobStarted", "jobID": 38}
 	#	Error : {"status": "Error", "message": "The file requested doesn't exist"}
@@ -92,6 +92,7 @@ class API:
 
 		file = request.json["filename"]
 		classname = request.json["classname"]
+		jobID =  request.json["jobID"]
 		rv = ""
 		
 		name, ext = os.path.splitext(file.lower())
@@ -103,7 +104,7 @@ class API:
 			rv = {"status" : "Error", "message" : "The File's extension is not the correct one (*.ppm required)"}
 			
 		else :
-			jobID = self._engine.signBinaryImage(file, classname)
+			self._engine.signBinaryImage(file, classname, jobID)
 			rv = {"status" : "JobStarted", "jobID": jobID}
 		
 		response.content_type = 'application/json'

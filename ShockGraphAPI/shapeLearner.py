@@ -31,17 +31,8 @@ class ShapeLearner():
 		timeThread.join()
 	
 	
-	def signBinaryImage(self, _img, _class):
-		
-		url = 'http://127.0.0.1:8888/createJob/'
-		
-		response = urllib2.urlopen(url)
-		data = json.load(response)   
-		jobID = int(data['jobID'])
-		
-		self.__dll.signBinaryImage(_img, _class, jobID)
-		
-		return jobID
+	def signBinaryImage(self, _img, _class, _jobID):
+		self.__dll.signBinaryImage(_img, _class, _jobID)		
 		
 	
 	def getActiveThread(self):
