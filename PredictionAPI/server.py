@@ -281,4 +281,4 @@ init = initServer()
 classifier = init[0]
 outputs = init[1]
 
-run(server='paste', host='0.0.0.0', port=8888, debug=True, reloader=True)
+run(server='paste', host='localhost', port=8888, debug=True, reloader=True)
