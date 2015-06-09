@@ -1,0 +1,4 @@
+<config>
+	<DBserver name="knowledgeBase" ip="54.77.188.25" port="10104"/>
+	<DBserver name="prodServer" ip="54.77.188.25" port="10001"/>
+</config>

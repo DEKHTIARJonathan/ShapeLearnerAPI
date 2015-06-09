@@ -1,15 +1,18 @@
+################################# Loading config File ################################
+import sys
+sys.path.append('../Config/')
+from loadConf import loadConf
+
 ################################# Import Libraries ################################
 import os.path
 import operator
 import numpy as np
 from sqlalchemy import *
 from sqlalchemy.sql import select, column
-import logging
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.externals import joblib
 from bottle import route, run, response, static_file, request, error
 from json import dumps
-logging.getLogger('sqlalchemy.dialects.postgresql').setLevel(logging.INFO)
 
 ################################# Save/Load Model #################################
 def saveModel(model):
@@ -95,7 +98,7 @@ def initServer(recomputeModel = False, _neighbors = 53, _weights = 'distance'):
     if ((recomputeModel == False) and (model != False)) :
         return model
     else:
-        v_connect = initConnect(IPtrainServer)
+        v_connect = initConnect(trainServer)
 
         model = trainModel(v_connect, _neighbors, _weights)
         saveModel(model)
@@ -117,7 +120,7 @@ def launchPredict(classifier, id, n_precision = -1, p_precision = -1):
 	
 	if n_precision == 0:
 		n_precision = 1 #On modifie la variable pour ne pas obtenir une output vide.
-	v_connect = initConnect(IPtestServer)
+	v_connect = initConnect(testServer)
 	
 	data = getTestData('learning_data', v_connect, id)
 	
@@ -264,13 +267,18 @@ def getImages(filename):
      
 	
 @route('/')
-def NoIdPassed():
+def homepage():
     return static_file("index.html", root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\')
 
 ################################# Server Initialization #####################################
-IPtrainServer = "54.77.188.25:10104"
-IPtestServer = "54.77.188.25:10001"
+config = loadConf()
+
+trainServer = config['knowledgeBase'][0]+":"+config['knowledgeBase'][1]
+testServer = config['prodServer'][0]+":"+config['prodServer'][1]
+
 init = initServer()
+
 classifier = init[0]
 outputs = init[1]
+
 run(server='paste', host='0.0.0.0', port=8888, debug=True, reloader=True)
