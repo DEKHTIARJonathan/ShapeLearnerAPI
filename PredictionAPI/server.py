@@ -251,24 +251,27 @@ def recomputeModel():
 #################################### WebService Route / #####################################
 @error(404)
 def error404(error):
-    return static_file("404.html", root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\')
+    return static_file("404.html", root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\html')
 	
 @error(500)
 def error500(error):
     return error
 	
-@route('/images/<filename:path>')
-def getImages(filename):
+@route('/static/<filename:path>')
+def getStaticFile(filename):
 	extension = str.lower(os.path.splitext(filename)[1][1:])
 	if  extension == 'jpeg'or extension == 'jpg':
-		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\images', mimetype='image/jpg')
+		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\static', mimetype='image/jpg')
 	elif extension == 'png':
-		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\images', mimetype='image/png')
-     
+		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\static', mimetype='image/png')
+	elif extension == 'css':
+		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\static', mimetype='text/css')
+	elif extension == 'js':
+		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\static', mimetype='text/javascript')    
 	
 @route('/')
 def homepage():
-    return static_file("index.html", root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\')
+    return static_file("index.html", root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\PredictionAPI\\html')
 
 ################################# Server Initialization #####################################
 config = loadConf()
@@ -282,3 +285,4 @@ classifier = init[0]
 outputs = init[1]
 
 run(server='paste', host='localhost', port=8888, debug=True, reloader=True)
+#run(server='paste', host='0.0.0.0', port=8888, debug=True, reloader=True)
