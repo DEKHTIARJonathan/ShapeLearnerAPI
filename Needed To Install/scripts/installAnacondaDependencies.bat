@@ -3,4 +3,10 @@ conda update conda -y
 conda install numpy scikit-learn sqlalchemy vtk -y 
 conda install -c https://conda.binstar.org/topper psycopg2-win-py27 -y
 pip install bottle paste
+
+"C:\Anaconda32\Scripts\anaconda.bat"
+conda update conda -y
+conda install numpy scikit-learn sqlalchemy vtk -y 
+conda install -c https://conda.binstar.org/topper psycopg2-win-py27 -y
+pip install bottle paste
 pause;
