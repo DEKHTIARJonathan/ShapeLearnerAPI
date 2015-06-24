@@ -2,9 +2,10 @@
 import os.path
 import sys
 import ctypes
-from threading import Thread
+import threading
 import time
 from timing import TimingThread
+import threadPool as TP
 
 dllsPath = os.path.dirname(os.path.realpath(__file__))+'\dlls'
 os.environ['PATH'] = dllsPath + ';' + os.environ['PATH']
@@ -28,16 +29,7 @@ class ShapeLearner():
 	
 	def signBinaryImage(self, _img, _class):
 		self.__dll.signBinaryImage(_img, _class)
-
-
-class ShockGrThread(Thread):
- 
-	def __init__(self, _app, _img, _class):
-		''' Constructor. '''
-		Thread.__init__(self)
-		self.__app = _app
-		self.__img = _img
-		self.__class = _class
-		
-	def run(self):
-		self.__app.signBinaryImage(self.__img, self.__class)
+		return "OK"
+	
+	def getActiveThread(self):
+		return int(self.__dll.getActiveThread())

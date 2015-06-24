@@ -4,8 +4,9 @@ from bottle import route, run, response, static_file, request, error
 from json import dumps
 
 import ctypes
-from threading import Thread
+import threading
 import time 
+import threadPool as TP
 from sqlalchemy import *
 from sqlalchemy.sql import select, column
 
@@ -56,6 +57,9 @@ inputDir = "data"
 
 partID = 0
 files = getFiles(inputDir + "/")
+ 
+jobs = []
+threadList = []
 
 for file in files :
 	partID = partID + 1 
@@ -67,8 +71,30 @@ for file in files :
 				classname = file[:-8]
 		except Exception :
 				classname = file[:-7]
+		jobs.append(["data/" + file, classname, 'shockThread' + str(partID)])
+
+locker = threading.Lock() 
+	
+for j in jobs:
+	locker.acquire()
+	activeThread = trainEngine.getActiveThread()
+	
+	if activeThread > 60 and len(threadList) > 0:
+		th = threadList[0]
+		del threadList[0]
 		
-		shockThread = SL.ShockGrThread(trainEngine, "data/" + file, classname)
-		shockThread.setName('shockThread' + str(partID))
-		shockThread.start()
-		print "Launched : " + file
+	elif activeThread > 60 and len(threadList) <= 0 :
+		time.sleep(1)
+		
+	else :
+		print "Launched : " + j[0] + " // " + j[1] + " && Thread number = " + str(activeThread)
+		threadList.append(threading.Thread(target = trainEngine.signBinaryImage, name=j[2],args=(j[0], j[1])))	
+		threadList[-1].daemon=True
+		threadList[-1].start()
+		
+	locker.release()
+
+for t in threadList:	
+	t.join(1)
+	
+print "Operation Finished"
