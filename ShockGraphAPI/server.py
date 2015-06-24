@@ -1,8 +1,3 @@
-################################# Loading config File ################################
-import sys
-sys.path.append('../Config/')
-from loadConf import loadConf
-
 ################################# Import Libraries ################################
 import os.path
 from bottle import route, run, response, static_file, request, error
@@ -14,6 +9,20 @@ import time
 from sqlalchemy import *
 from sqlalchemy.sql import select, column
 
+################################# Loading config File ################################
+import sys
+sys.path.append('../Config/')
+dllsPath = os.path.dirname(os.path.realpath(__file__))+'\dlls'
+os.environ['PATH'] = dllsPath + ';' + os.environ['PATH']
+from loadConf import loadConf
+
+import api
+import shapeLearner as SL
+
+#######################################################################################
+#######################################################################################
+#######################################################################################
+
 ################################# Init Connection #################################
 
 def initConnect(credentials):
@@ -23,94 +32,43 @@ def initConnect(credentials):
 	
 ################################# Threading Classes ###############################
  
-class TimingThread(Thread):
- 
-	def __init__(self, _timer):
-		''' Constructor. '''
-		Thread.__init__(self)
-		self.__timingDLL = ctypes.CDLL('timeTrickDLL.dll')
-		self.__timingDLL.changeTime.argtypes = [ctypes.c_uint]
-		self.timer = _timer
- 
-	def run(self):
-		self.__timingDLL.changeTime(self.timer)	
-		
-		
-class ShockGrThread(Thread):
- 
-	def __init__(self, _dll, _img, _class):
-		''' Constructor. '''
-		Thread.__init__(self)
-		self.__dll = _dll
-		self.__img = _img
-		self.__class = _class
-		
-	def run(self):
-		self.__dll.signBinaryImage(self.__img, self.__class)
-		#self.__dll.waitBeforeClosing()
+'''
+api = api.API()
+'''
 
-#################################### WebService Route / #####################################
-
-@error(404)
-def error404(error):
-	return static_file("404.html", root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\\ShockGraphAPI\\html')
-	
-@error(500)
-def error500(error):
-	return error
-
-@route('/static/<filename:path>')
-def getStaticFile(filename):
-	extension = str.lower(os.path.splitext(filename)[1][1:])
-	if  extension == 'jpeg'or extension == 'jpg':
-		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\ShockGraphAPI\\static', mimetype='image/jpg')
-	elif extension == 'png':
-		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\ShockGraphAPI\\static', mimetype='image/png')
-	elif extension == 'css':
-		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\ShockGraphAPI\\static', mimetype='text/css')
-	elif extension == 'js':
-		return static_file(filename, root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\ShockGraphAPI\\static', mimetype='text/javascript')  
-
-@route('/prepareLearning')
-def prepareLearning():
-	v_connect = initConnect(trainServer)
-	rslt =  v_connect[1].execute('select * from updateColumnData();')
-
-	return "Training Data Updated"
-
-@route('/')
-def homepage():
-	global partID
-	shockThread = ShockGrThread(dll, lst[partID][0], lst[partID][1])
-	shockThread.setName('shockThread1')
-	shockThread.start()
-	partID = partID + 1
-	return static_file("index.html", root='C:\\Users\\Administrator\\Desktop\\ShapeLearnerPackage\\\ShockGraphAPI\\html')
-	
-################################# Server Initialization #####################################
 config = loadConf()
-
 trainServer = {'ip':config['trainDB']['ip'], 'port':config['trainDB']['port'], 'dbUser':config['trainDB']['dbUser'], 'dbPass':config['trainDB']['dbPass'], 'dbName':config['trainDB']['dbName']}
 testServer = {'ip':config['prodDB']['ip'], 'port':config['prodDB']['port'], 'dbUser':config['prodDB']['dbUser'], 'dbPass':config['prodDB']['dbPass'], 'dbName':config['prodDB']['dbName']}
 
+trainEngine = SL.ShapeLearner(trainServer['dbUser'], trainServer['dbPass'], trainServer['dbName'], trainServer['ip'], int(trainServer['port']), "structure.sql")
 
-timeThread = TimingThread(3)
-timeThread.setName('timeThread')
+################################### LAUNCH EXEC ######################################################
 
-timeThread.start()
-time.sleep(1)
-
-dll=ctypes.CDLL('ShapeLearnerDLL.dll')
-dll.openDataBase.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint, ctypes.c_char_p]
-dll.signBinaryImage.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-#void openDataBase(char* _dbUser, char* _dbPass, char* _dbName, char* _dbHost, unsigned int _dbPort, char* _dbInit = "")
-
-dll.openDataBase(trainServer['dbUser'], trainServer['dbPass'], trainServer['dbName'], trainServer['ip'], int(trainServer['port']), "structure.sql")
-
-timeThread.join()
-
-lst = [['AmortisseurA00.ppm', 'Amortisseur'],['AmortisseurA10.ppm', 'Amortisseur']]
+def getFiles(path) : 
+	files = []
+	listing = os.listdir(path)
+	for f in listing:
+		if os.path.isfile(path + "/" + f):
+			files.append(f)
+	return files
+	
+inputDir = "data"
 
 partID = 0
+files = getFiles(inputDir + "/")
 
-run(server='paste', host='0.0.0.0', port=8000)
+for file in files :
+	partID = partID + 1 
+	if (file.endswith('.ppm') or file.endswith('.PPM')) and file[0] != "." :
+		classname = ""
+		
+		try:
+			if int(file[-7:-4]) >= 100: #FileNumber is equal or greater than 100
+				classname = file[:-8]
+		except Exception :
+				classname = file[:-7]
+		
+		shockThread = SL.ShockGrThread(trainEngine, "data/" + file, classname)
+		shockThread.setName('shockThread' + str(partID))
+		shockThread.start()
+		print "Launched : " + file
