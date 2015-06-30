@@ -22,14 +22,16 @@ class ShapeLearner():
 		self.__dll = ctypes.CDLL('dlls/ShapeLearnerDLL.dll')
 		#void openDataBase(char* _dbUser, char* _dbPass, char* _dbName, char* _dbHost, unsigned int _dbPort, char* _dbInit = "")
 		self.__dll.openDataBase.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint, ctypes.c_char_p]
-		self.__dll.signBinaryImage.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+		self.__dll.signBinaryImage.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint]
 	
 		self.__dll.openDataBase(_dbUser, _dbPass, _dbName, _ip, int(_port), _dbInitFile)
 		timeThread.join()
 	
+	
 	def signBinaryImage(self, _img, _class):
-		self.__dll.signBinaryImage(_img, _class)
+		self.__dll.signBinaryImage(_img, _class, 1)
 		return "OK"
+		
 	
 	def getActiveThread(self):
 		return int(self.__dll.getActiveThread())
