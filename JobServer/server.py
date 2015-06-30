@@ -33,6 +33,18 @@ def initConnect(credentials):
  
 
 config = loadConf()
-taskServer = {'ip':config['taskDB']['ip'], 'port':config['taskDB']['port'], 'dbUser':config['taskDB']['dbUser'], 'dbPass':config['taskDB']['dbPass'], 'dbName':config['taskDB']['dbName']}
+jobServer = {'ip':config['jobDB']['ip'], 'port':config['jobDB']['port'], 'dbUser':config['jobDB']['dbUser'], 'dbPass':config['jobDB']['dbPass'], 'dbName':config['jobDB']['dbName']}
 
-api = api.API()
+v_connect = initConnect(jobServer)
+
+api = api.API(v_connect)
+api.start()
+
+
+
+'''
+UPDATE table SET field='C', field2='Z' WHERE id=3;
+INSERT INTO table (id, field, field2)
+       SELECT 3, 'C', 'Z'
+       WHERE NOT EXISTS (SELECT 1 FROM table WHERE id=3);
+	   '''
