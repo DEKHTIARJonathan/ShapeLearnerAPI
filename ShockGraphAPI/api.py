@@ -27,7 +27,7 @@ class API:
 		self._route()
 		
 		self._engine = ""
-		if self._matchServer != "":
+		if not self._matchServer:
 			self._engine =  SL.ShapeLearner(credentials['dbUser'], credentials['dbPass'], credentials['dbName'], credentials['ip'], int(credentials['port']))
 		else:
 			self._engine =  SL.ShapeLearner()

@@ -16,7 +16,7 @@ import api
 configDB = loadDBConf()
 configAPI = loadAPIConf()
 
-shockGraphServerAPI = {'ip':configAPI['shockGraphMatch']['ip'], 'port':configAPI['shockGraphMatch']['port'], 'local':configAPI['shockGraphMatch']['local']}
+shockGraphServerAPI = {'ip':configAPI['shockGraphMatchServer']['ip'], 'port':configAPI['shockGraphMatchServer']['port'], 'local':configAPI['shockGraphMatchServer']['local']}
 jobServerAPI = {'ip':configAPI['jobServer']['ip'], 'port':configAPI['jobServer']['port'], 'local':configAPI['jobServer']['local']}
 
 api = api.API(jobServerAPI, shockGraphServerAPI['port'], shockGraphServerAPI['local'])
