@@ -5,4 +5,5 @@ Needed To Install/binaries/Anaconda-2.2.0-Windows-x86_64.exe
 *.pyc
 *.ppm
 *.log
+temp/*
 Needed To Install/binaries/Anaconda-2.2.0-Windows-x86.exe
