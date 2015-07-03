@@ -7,11 +7,12 @@ import urllib2
 
 #################################### WebService Route / #####################################
 class API:
-	def __init__(self, stl2ppmServer, shockGraphProdServer, shockGraphTrainServer, shockGraphMatchServer, port, local):
+	def __init__(self, stl2ppmServer, jobServer, shockGraphProdServer, shockGraphTrainServer, shockGraphMatchServer, port, local):
 		self._app = Bottle()
 		self._route()
 		
 		self._stl2ppmServer = 'http://' + stl2ppmServer['ip'] + ':' + stl2ppmServer['port'] + '/generatePPM'
+		self._jobServer = 'http://' + jobServer['ip'] + ':' + jobServer['port'] + '/getJobStatus'
 		self._shockGraphProdServer = 'http://' + shockGraphProdServer['ip'] + ':' + shockGraphProdServer['port'] + '/launchComputation'
 		self._shockGraphTrainServer = 'http://' + shockGraphTrainServer['ip'] + ':' + shockGraphTrainServer['port'] + '/launchComputation'
 		self._shockGraphMatchServer = 'http://' + shockGraphMatchServer['ip'] + ':' + shockGraphMatchServer['port'] + '/launchComputation'
@@ -58,6 +59,7 @@ class API:
 		
 		self._app.route('/upload', method="POST", callback=self._upload)
 		self._app.route('/signInContext', method="POST", callback=self._signInContext)
+		self._app.route('/getJobStatus', method="POST", callback=self._getJobStatus)
 		
 	
 	def _strip_path(self):
@@ -151,4 +153,12 @@ class API:
 		response.content_type = 'application/json'
 		return dumps(rv)
 	
-	
+	def _getJobStatus(self):
+		
+		idJob = request.json["idJob"]
+		
+		jobData = {"idJob":idJob}
+		tmp = self._sendPostRequest(self._jobServer, jobData)
+		
+		response.content_type = 'application/json'
+		return dumps(tmp)

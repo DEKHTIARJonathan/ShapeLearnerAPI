@@ -32,6 +32,7 @@ class API:
 		self._app.error(500)(self._error500)
 		
 		self._app.route('/updateJob', method="POST", callback=self._updateJob)
+		self._app.route('/getJobStatus', method="POST", callback=self._getJob)
 		self._app.route('/initdb', callback=self._initDB)
 		self._app.route('/static/<filename:path>', callback=self._getStaticFile)
 		self._app.route('/createJob', callback=self._createJob)
@@ -94,6 +95,29 @@ class API:
 		
 		if request.json["jobStatus"] == "Finished":
 			os.remove(request.json["partName"]) #Removing the file after using
+		
+		response.content_type = 'application/json'
+		return dumps(rv)
+	
+	def _getJob(self):
+		
+		sql = """
+			SELECT
+				"idJob",
+				"jobStatus", 
+				"partID", 
+				"partName", 
+				"serverIP", 
+				"serverPort", 
+				"message", 
+				"updateDate"
+			FROM jobs
+			WHERE "idJob" = """ + str(request.json["idJob"]) + """;
+		"""
+		
+		result = self._engine.execute(sql).fetchone()
+		rv = {"idJob": result['idJob'], "jobStatus": result['jobStatus'], "partID": result['partID'], "partName": result['partName'], "serverIP": result['serverIP'], 
+		"serverPort": result['serverPort'], "message": result['message'], "updateDate": result['updateDate'].isoformat()}		
 		
 		response.content_type = 'application/json'
 		return dumps(rv)
