@@ -1,4 +1,14 @@
 <config>
-	<DBserver serverName="trainDB" ip="54.77.188.25" port="10001" dbUser="postgres" dbPass="##########################" dbName="postgres"/>
-	<DBserver serverName="prodDB" ip="54.77.188.25" port="10000" dbUser="postgres" dbPass="##########################" dbName="postgres"/>
+
+	<DBserver serverName="prodDB" ip="#############" port="10000" dbUser="postgres" dbPass="########################" dbName="postgres"/>
+	<DBserver serverName="trainDB" ip="#############" port="10001" dbUser="postgres" dbPass="########################" dbName="postgres"/>
+	<DBserver serverName="jobDB" ip="#############" port="11000" dbUser="postgres" dbPass="########################" dbName="postgres"/>
+	
+	<APIserver serverName="shapeLearnerAPI" local="false"  ip="127.0.0.1" port="10000"/>
+	<APIserver serverName="STL2PPMServer" local="true"  ip="127.0.0.1" port="8100"/>
+	<APIserver serverName="jobServer" local="false"  ip="127.0.0.1" port="8888"/>
+	<APIserver serverName="shockGraphProdServer" local="true"  ip="127.0.0.1" port="8000"/>
+	<APIserver serverName="shockGraphTrainServer" local="true"  ip="127.0.0.1" port="8001"/>
+	<APIserver serverName="shockGraphMatchServer" local="true"  ip="127.0.0.1" port="8002"/>
+	
 </config>
